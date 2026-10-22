@@ -1,8 +1,8 @@
 {
   "name": "claude-jev-collection",
-  "description": "jungyu's Claude Code setup in one install: Jev harness, guard hooks, status line and the plugins it relies on",
+  "description": "Claude Code setup in one install: Jev harness, guard hooks, status line and the plugins it relies on",
   "owner": {
-    "name": "jungyu"
+    "name": "naturekloud"
   },
   "allowCrossMarketplaceDependenciesOn": [
     "typesafe-ai",

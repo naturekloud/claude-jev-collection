@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Jev orchestrator, secret guard, auto-approve, status line and global rules. Run /kit:setup after installing.",
   "author": {
-    "name": "jungyu"
+    "name": "naturekloud"
   },
   "license": "MIT",
   "dependencies": [
