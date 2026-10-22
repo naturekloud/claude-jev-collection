@@ -1,6 +1,6 @@
 # claude-jev-collection
 
-jungyu의 Claude Code 환경을 한 번에 설치하는 로컬 마켓플레이스다. 플러그인 `kit@claude-jev-collection` 하나를 설치하면 아래 구성이 함께 들어온다.
+플러그인 `kit@claude-jev-collection` 하나를 설치하면 아래 구성이 함께 들어온다.
 
 ## 구성
 
