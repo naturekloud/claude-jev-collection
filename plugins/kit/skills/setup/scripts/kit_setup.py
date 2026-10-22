@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Apply the parts of the kit a plugin cannot ship: status line, env, global rules, jev agents,
-official plugins, and removal of the pre-kit copies that would otherwise run twice.
+official plugins, the skillpick clone, and removal of the pre-kit copies that would otherwise run twice.
 
 Dry run by default: prints the plan. --apply makes the changes (backups go to ~/.claude/kit/backup/<time>/).
 --force also overwrites files that already exist but differ from the kit (CLAUDE.md, rules, agents, statusline.sh).
@@ -26,7 +26,12 @@ ENV = {"JEV_SECRET_ASK": "0.5", "CLAUDE_CODE_ENABLE_FUNCTION_HOOKS": "1"}
 STATUS_LINE = {"type": "command", "command": "~/.claude/statusline.sh"}
 OFFICIAL = ["context7", "frontend-design", "claude-md-management"]
 # settings.json hook commands the kit's hooks/hooks.json now provides
-LEGACY_HOOKS = ["jev-orchestrator/hooks/", "jev-secret-guard/jev_secret_guard.py", "jev-auto-approve/jev_auto_approve.py"]
+LEGACY_HOOKS = ["jev-orchestrator/hooks/", "jev-secret-guard/jev_secret_guard.py", "jev-auto-approve/jev_auto_approve.py",
+                "skillpick/src/cli.ts"]
+SKILLPICK_REPO = "https://github.com/govindup63/skillpick.git"
+SKILLPICK = os.environ.get("SKILLPICK_HOME") or os.path.expanduser("~/skillpick")
+# same search order as hooks/skillpick-hook.sh
+BUN_CANDIDATES = ["~/.bun/bin/bun", "/home/linuxbrew/.linuxbrew/bin/bun", "/opt/homebrew/bin/bun", "/usr/local/bin/bun"]
 # user-level skills the kit now ships as kit:<name>
 LEGACY_SKILLS = ["jev-orchestrator", "context7-mcp"]
 # agents point at the skill through the link the SessionStart hook keeps (sync.sh rewrites them)
@@ -50,7 +55,7 @@ def backup(path):
     shutil.move(path, dest)
 
 
-def file_plan(src, dst, force):
+def file_plan(src, dst, force, kit_installed):
     """('copy'|'replace'|None, note) for one asset file."""
     if not os.path.exists(dst):
         return "copy", "없음 → 복사"
@@ -58,11 +63,29 @@ def file_plan(src, dst, force):
         return None, "같음"
     with open(src, encoding="utf-8") as a, open(dst, encoding="utf-8") as b:
         if a.read() == b.read().replace(OLD_SKILL_PATH, NEW_SKILL_PATH):
-            return "replace", "스킬 경로만 다름 → 백업 후 교체"
+            # the new path only exists once the kit's SessionStart hook has run
+            if kit_installed:
+                return "replace", "스킬 경로만 다름 → 백업 후 교체"
+            return None, "스킬 경로만 다름 → kit 설치 후 교체"
     return ("replace", "다름 → 백업 후 교체") if force else (None, "다름 → 유지 (--force로 교체)")
 
 
-def file_actions(force):
+FAILED = []
+
+
+def run(cmd):
+    """Run a command; False (with the reason printed) when it is missing or fails."""
+    try:
+        if subprocess.run(cmd, check=False).returncode == 0:
+            return True
+        print(f"    실패: {' '.join(cmd[:3])}")
+    except OSError as e:
+        print(f"    실행 불가: {cmd[0]} ({type(e).__name__})")
+    FAILED.append(" ".join(c for c in cmd[:4] if not c.startswith("-")))
+    return False
+
+
+def file_actions(force, kit_installed):
     pairs = [(os.path.join(ASSETS, "statusline.sh"), os.path.join(CLAUDE, "statusline.sh")),
              (os.path.join(ASSETS, "CLAUDE.md"), os.path.join(CLAUDE, "CLAUDE.md"))]
     for sub in ("rules", "agents"):
@@ -70,7 +93,7 @@ def file_actions(force):
             pairs.append((os.path.join(ASSETS, sub, name), os.path.join(CLAUDE, sub, name)))
     out = []
     for src, dst in pairs:
-        kind, note = file_plan(src, dst, force)
+        kind, note = file_plan(src, dst, force, kit_installed)
         out.append((kind, src, dst, note))
     return out
 
@@ -111,6 +134,40 @@ def api_key_present():
         return False
 
 
+def find_bun():
+    for b in [shutil.which("bun")] + [os.path.expanduser(c) for c in BUN_CANDIDATES]:
+        if b and os.access(b, os.X_OK):
+            return b
+    return None
+
+
+def skillpick_plan(apply):
+    """Clone skillpick and install its packages when missing. Returns the number of changes."""
+    short = SKILLPICK.replace(os.path.expanduser("~"), "~")
+    bun = find_bun()
+    steps = []
+    if not os.path.exists(os.path.join(SKILLPICK, "src", "cli.ts")):
+        steps.append(("git clone", ["git", "clone", "-q", SKILLPICK_REPO, SKILLPICK]))
+    if steps or not os.path.isdir(os.path.join(SKILLPICK, "node_modules")):
+        steps.append(("bun install", [bun or "bun", "install", "--cwd", SKILLPICK]))
+    if not steps:
+        print(f"    {short}: 설치됨")
+    for label, cmd in steps:
+        print(f"  * {short}: {label}")
+        if apply:
+            if cmd[0] == "bun" and not bun:
+                print("    bun이 없어 건너뜀 → https://bun.sh 설치 후 /kit:setup 다시 실행")
+                break
+            if not run(cmd):
+                break
+    if not bun:
+        print("    bun: 없음 → 설치 전까지 skillpick 훅은 아무것도 하지 않음")
+    key_file = os.path.expanduser("~/.config/skillpick/config.json")
+    if not (os.environ.get("TYPESAFE_API_KEY") or os.path.exists(key_file)):
+        print("    skillpick 키: 없음 → TYPESAFE_API_KEY를 셸에 두거나 skillpick set-key 실행")
+    return len(steps)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--apply", action="store_true", help="실제로 반영 (기본은 계획만 출력)")
@@ -125,7 +182,7 @@ def main():
     print("모드: " + ("적용" if args.apply else "드라이런 (--apply로 적용)"))
 
     print("\n[파일]")
-    for kind, src, dst, note in file_actions(args.force):
+    for kind, src, dst, note in file_actions(args.force, kit_installed):
         print(f"  {'*' if kind else ' '} {dst.replace(os.path.expanduser('~'), '~')}: {note}")
         if kind and args.apply:
             if kind == "replace":
@@ -154,11 +211,6 @@ def main():
         print("    kit 플러그인이 아직 설치되지 않아 기존 훅은 그대로 둡니다")
     if not new.get("hooks"):
         new.pop("hooks", None)
-    for event, groups in (new.get("hooks") or {}).items():
-        for g in groups:
-            for h in g.get("hooks", []):
-                if "skillpick" in h.get("command", ""):
-                    print(f"    {event} skillpick 훅: kit 범위 밖, 유지")
     if new != settings:
         changes += 1
         if args.apply:
@@ -190,14 +242,19 @@ def main():
         print(f"  * {name}: claude plugin install {name}@claude-plugins-official")
         changes += 1
         if args.apply:
-            subprocess.run(["claude", "plugin", "install", f"{name}@claude-plugins-official"], check=False)
+            run(["claude", "plugin", "install", f"{name}@claude-plugins-official"])
+
+    print("\n[skillpick]")
+    changes += skillpick_plan(args.apply)
 
     print("\n[확인]")
     print("    TYPESAFE_API_KEY: " + ("있음" if api_key_present() else "없음 → ~/.config/typesafe/.env 또는 셸 환경에 설정"))
     print(f"    ~/.claude/kit/current: {'있음' if os.path.exists(os.path.join(CLAUDE, 'kit', 'current')) else '다음 세션 시작 때 생성'}")
 
     if args.apply and changes:
-        print(f"\n적용 완료. 백업: {BACKUP.replace(os.path.expanduser('~'), '~')} (변경 전 파일이 있을 때만 생성)")
+        if FAILED:
+            print(f"\n실패 {len(FAILED)}건: {', '.join(FAILED)} (원인은 위 메시지 참고, 해결 후 다시 실행)")
+        print(f"\n적용 끝. 백업: {BACKUP.replace(os.path.expanduser('~'), '~')} (변경 전 파일이 있을 때만 생성)")
         print("새 세션부터 반영됩니다.")
     elif changes:
         print(f"\n변경 {changes}건 예정. 적용하려면 --apply")

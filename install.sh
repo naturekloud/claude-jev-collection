@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-shot install on a new machine: register the dependency marketplaces, install kit@claude-kit
+# One-shot install on a new machine: register the dependency marketplaces, install kit@claude-jev-collection
 # (which pulls in its 8 dependency plugins), then run the setup plan and ask before applying it.
 set -euo pipefail
 
@@ -21,8 +21,8 @@ command -v python3 >/dev/null || { echo "python3가 없습니다"; exit 1; }
 for m in "${MARKETPLACES[@]}"; do
   claude plugin marketplace add "$m" || echo "  (건너뜀: $m, 이미 있거나 추가 실패)"
 done
-claude plugin marketplace add "$ROOT" || echo "  (건너뜀: claude-kit, 이미 있음)"
-claude plugin install kit@claude-kit
+claude plugin marketplace add "$ROOT" || echo "  (건너뜀: claude-jev-collection, 이미 있음)"
+claude plugin install kit@claude-jev-collection
 
 SETUP="$ROOT/plugins/kit/skills/setup/scripts/kit_setup.py"
 python3 "$SETUP"
