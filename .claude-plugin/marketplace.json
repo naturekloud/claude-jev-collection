@@ -1,0 +1,25 @@
+{
+  "name": "claude-kit",
+  "description": "jungyu's Claude Code setup in one install: Jev harness, guard hooks, status line and the plugins it relies on",
+  "owner": {
+    "name": "jungyu"
+  },
+  "allowCrossMarketplaceDependenciesOn": [
+    "typesafe-ai",
+    "alexei-led-claude-router",
+    "jev-belay",
+    "fast-jev-output",
+    "fast-jev-compaction",
+    "jev-rules",
+    "jev-guard",
+    "karpathy-skills"
+  ],
+  "plugins": [
+    {
+      "name": "kit",
+      "source": "./plugins/kit",
+      "description": "Jev orchestrator, secret guard, auto-approve, status line and global rules, plus 8 dependency plugins",
+      "version": "0.1.0"
+    }
+  ]
+}

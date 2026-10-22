@@ -1,0 +1,19 @@
+{
+  "name": "kit",
+  "version": "0.1.0",
+  "description": "Jev orchestrator, secret guard, auto-approve, status line and global rules. Run /kit:setup after installing.",
+  "author": {
+    "name": "jungyu"
+  },
+  "license": "MIT",
+  "dependencies": [
+    "typesafe@typesafe-ai",
+    "router@alexei-led-claude-router",
+    "jev-belay@jev-belay",
+    "fast-jev-output@fast-jev-output",
+    "fast-jev-compaction@fast-jev-compaction",
+    "jev-rules@jev-rules",
+    "jev-guard@jev-guard",
+    "andrej-karpathy-skills@karpathy-skills"
+  ]
+}
