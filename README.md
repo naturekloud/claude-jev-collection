@@ -58,6 +58,41 @@ claude plugin validate ~/claude-jev-collection
 python3 ~/claude-jev-collection/plugins/kit/skills/setup/scripts/kit_setup.py   # 드라이런
 ```
 
+## 원본 출처
+
+kit 안의 각 구성요소가 어디서 왔는지다. 라이선스는 설치된 플러그인 캐시의 LICENSE 파일을 기준으로 적었고, 확인하지 못한 항목은 '확인 필요'로 뒀다. 원본을 고치면 `sync.sh`로 다시 복사한다. 복사본을 직접 고치지 않는다.
+
+### 의존 플러그인 (설치 시 원본 마켓플레이스에서 받는다)
+
+| 플러그인 | 원본 저장소 | 라이선스 |
+|---|---|---|
+| typesafe@typesafe-ai | https://github.com/typesafe-ai/skills | MIT |
+| router@alexei-led-claude-router | https://github.com/alexei-led/claude-router | MIT |
+| jev-belay@jev-belay | https://github.com/valentynkit/jev-belay | MIT |
+| fast-jev-output@fast-jev-output | https://github.com/tamaratran/jev-pruner | MIT |
+| fast-jev-compaction@fast-jev-compaction | https://github.com/tamaratran/fast-jev-compaction | MIT |
+| jev-rules@jev-rules | https://github.com/EliaAlberti/jev-rules | 확인 필요 (설치본에 LICENSE 파일 없음) |
+| jev-guard@jev-guard | https://github.com/leepokai/jev-guard | MIT |
+| andrej-karpathy-skills@karpathy-skills | https://github.com/forrestchang/andrej-karpathy-skills | 확인 필요 (설치본에 LICENSE 파일 없음) |
+| context7@claude-plugins-official | https://github.com/anthropics/claude-plugins-official (`external_plugins/context7`) | 확인 필요 |
+| frontend-design@claude-plugins-official | https://github.com/anthropics/claude-plugins-official (`plugins/frontend-design`) | 확인 필요 |
+| claude-md-management@claude-plugins-official | https://github.com/anthropics/claude-plugins-official (`plugins/claude-md-management`) | 확인 필요 |
+
+### kit에 복사해 넣은 것
+
+| kit 안의 위치 | 원본 | 복사 시점 | 라이선스 |
+|---|---|---|---|
+| `plugins/kit/skills/jev-orchestrator/`, `plugins/kit/config/`, `plugins/kit/hooks` 중 jev 훅 3개, `plugins/kit/assets/agents/` | https://github.com/dansya-arsana/jev-harness (`skill/jev-orchestrator`, `config`, `agents`) | 커밋 `75ba6a8` | MIT, © dansya-arsana (`plugins/kit/licenses/jev-harness.LICENSE`) |
+| `plugins/kit/guards/jev-secret-guard/` | https://github.com/BasmaAbouzied0/jev-secret-guard | 커밋 `9104364`의 **로컬 수정본**. 식별자 필터 변경(`fix/skip-code-identifiers`)은 원본에 올라가 있지 않다 | MIT, © Basma Nageh Abouzied (`guards/jev-secret-guard/LICENSE`) |
+| `plugins/kit/guards/jev-auto-approve/` | https://github.com/BasmaAbouzied0/jev-auto-approve | 커밋 `d8e6366` | MIT, © Basma Nageh Abouzied (`guards/jev-auto-approve/LICENSE`) |
+| `plugins/kit/hooks/skillpick-hook.sh`와 `/kit:setup`이 받는 skillpick | https://github.com/govindup63/skillpick (설치는 kit가 클론, 코드는 kit에 없다) | 설치 시점 `main` | MIT (`package.json`) |
+
+### 이 저장소에서 직접 만든 것
+
+- `plugins/kit/skills/setup/` (`/kit:setup`과 `kit_setup.py`), `plugins/kit/hooks/skillpick-hook.sh`, `plugins/kit/hooks/hooks.json`, `sync.sh`, `install.sh`, 마켓플레이스와 플러그인 매니페스트
+- `plugins/kit/skills/context7-mcp/`: 작성자의 자작 스킬. 원본 저장소는 없다
+- `plugins/kit/assets/statusline.sh`, `plugins/kit/assets/CLAUDE.md`, `plugins/kit/assets/rules/context7.md`: 작성자의 개인 설정 파일. 공개 전에 내용을 다시 확인한다
+
 ## 라이선스
 
 jev-harness(© dansya-arsana), jev-secret-guard·jev-auto-approve(© Basma Nageh Abouzied)는 MIT이며 원본 LICENSE를 `plugins/kit/licenses/`와 `plugins/kit/guards/*/`에 함께 둔다.
