@@ -1,0 +1,7 @@
+{
+  "name": "jev-kit",
+  "version": "0.1.0",
+  "description": "Jev task routing, context packs, structured handoffs and Codex agents.",
+  "skills": "./skills/",
+  "hooks": "./hooks/hooks.json"
+}

@@ -15,7 +15,7 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = os.path.dirname(HERE)
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(SCRIPTS)))
-REPO_AGENTS = os.path.join(REPO, "agents")
+REPO_AGENTS = os.path.join(REPO, "assets", "agents")
 JEV = os.path.join(SCRIPTS, "jev.py")
 os.environ["JEV_CONFIG"] = os.path.join(REPO, "config", "agents.json")  # tests never read ~/.claude/jev/agents.json
 sys.path.insert(0, SCRIPTS)

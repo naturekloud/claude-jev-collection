@@ -1,0 +1,11 @@
+{
+  "name": "jev-kit",
+  "version": "0.1.0",
+  "description": "Jev task routing, context packs, structured handoffs and Codex agents.",
+  "extensions": {
+    "com.openai": {
+      "hooks": "./hooks/hooks.json",
+      "onboardingSkill": "./skills/setup/SKILL.md"
+    }
+  }
+}

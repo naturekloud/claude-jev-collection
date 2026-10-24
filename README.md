@@ -1,5 +1,7 @@
 # claude-jev-collection
 
+Codex용 빌드·설치 방법과 이식 범위는 [codex/README.md](codex/README.md)를 참고한다.
+
 플러그인 `kit@claude-jev-collection` 하나를 설치하면 아래 구성이 함께 들어온다.
 
 ## 구성

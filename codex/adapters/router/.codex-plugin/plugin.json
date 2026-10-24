@@ -1,0 +1,8 @@
+{
+  "name": "router",
+  "version": "1.14.0-codex.5",
+  "description": "Interactive Codex routing recommendations, model mappings and local history.",
+  "skills": "./skills",
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json"
+}

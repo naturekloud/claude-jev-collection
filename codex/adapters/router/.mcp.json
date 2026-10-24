@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "router": {
+      "command": "/bin/sh",
+      "args": ["-c", "exec \"${CODEX_MCP_NODE_PATH:-node}\" \"$@\"", "router", "./scripts/launch.mjs"],
+      "cwd": ".",
+      "env_vars": ["PATH", "HOME", "SHELL", "ZDOTDIR", "CODEX_HOME", "CODEX_MCP_NODE_PATH", "TYPESAFE_API_KEY", "JEV_API_KEY"],
+      "startup_timeout_sec": 10,
+      "tool_timeout_sec": 30
+    }
+  }
+}

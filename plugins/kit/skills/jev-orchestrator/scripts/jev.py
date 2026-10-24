@@ -927,7 +927,7 @@ RESTART_HINT = ("Fix: re-run python scripts/onboard.py (re-renders ~/.claude/age
 
 
 def default_agents_dir():
-    return os.environ.get("JEV_AGENTS_DIR") or os.path.expanduser("~/.claude/agents")
+    return os.environ.get("JEV_AGENTS_DIR") or os.path.join(jevlib.RUNTIME_HOME, "agents")
 
 
 def is_model_alias(model):
@@ -1060,6 +1060,12 @@ def parse_tools(value):
 
 def resolve_agent_file(name, agents_dir=None, project_dir=None):
     """Project agents (<project>/.claude/agents) shadow user agents in Claude Code, so check those first."""
+    if jevlib.RUNTIME == "codex":
+        if project_dir:
+            p = os.path.join(project_dir, ".codex", "agents", name + ".toml")
+            if os.path.isfile(p):
+                return p, "project"
+        return os.path.join(agents_dir or default_agents_dir(), name + ".toml"), "user"
     if project_dir:
         p = os.path.join(project_dir, ".claude", "agents", name + ".md")
         if os.path.isfile(p):
@@ -1089,7 +1095,24 @@ def check_agent(name, cfg, agents_dir=None, project_dir=None, check_fallback=Tru
     except OSError as e:
         err.append("cannot read %s: %s" % (path, e))
         return row
-    fields, body, ferr = parse_frontmatter(text, use_yaml=use_yaml)
+    if jevlib.RUNTIME == "codex":
+        try:
+            import tomllib
+        except ImportError:
+            import tomli as tomllib
+        try:
+            fields = tomllib.loads(text)
+            body = fields.get("developer_instructions", "")
+            fields["effort"] = fields.get("model_reasoning_effort")
+            fields["tools"] = ["Read", "Edit", "Write"] if fields.get("sandbox_mode") == "workspace-write" else ["Read"]
+            ferr = []
+            expected_sandbox = "workspace-write" if spec.get("write") else "read-only"
+            if fields.get("sandbox_mode") != expected_sandbox:
+                ferr.append("sandbox_mode must be " + expected_sandbox)
+        except tomllib.TOMLDecodeError as e:
+            fields, body, ferr = None, "", [str(e)]
+    else:
+        fields, body, ferr = parse_frontmatter(text, use_yaml=use_yaml)
     err.extend("frontmatter %s" % e for e in ferr)
     if fields is None:
         return row
@@ -1137,7 +1160,8 @@ def preflight_table(rows):
             r["agent"], "yes" if r["exists"] else "NO", "yes" if r["frontmatter_ok"] else ("NO" if r["exists"] else "-"),
             reg, reg, model, effort))
     lines.append("")
-    lines.append("* yes = the file is valid, so Claude Code registers it at session start. " + REGISTRY_NOTE)
+    runtime = "Codex" if jevlib.RUNTIME == "codex" else "Claude Code"
+    lines.append("* yes = the file is valid, so %s registers it at session start. " % runtime + REGISTRY_NOTE)
     return "\n".join(lines)
 
 
@@ -1969,7 +1993,7 @@ def main():
     p = sub.add_parser("preflight"); p.add_argument("--json", action="store_true")
     p.add_argument("--all", action="store_true", help="check every configured agent, not only required_agents")
     p.add_argument("--agent", action="append", help="check only this agent (repeatable)")
-    p.add_argument("--agents-dir", help="default ~/.claude/agents (env JEV_AGENTS_DIR)"); p.set_defaults(fn=cmd_preflight)
+    p.add_argument("--agents-dir", help="runtime agents directory (env JEV_AGENTS_DIR)"); p.set_defaults(fn=cmd_preflight)
     p = sub.add_parser("escalate"); p.add_argument("--task", required=True)
     p.add_argument("--from", dest="from_role", required=True, help="role that failed, e.g. jev-builder or builder")
     p.add_argument("--category", required=True, choices=CATEGORIES)

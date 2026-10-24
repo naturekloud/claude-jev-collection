@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|clear)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 \"${PLUGIN_ROOT}/scripts/startup.py\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

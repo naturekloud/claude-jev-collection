@@ -24,7 +24,7 @@ import jev  # noqa: E402
 LOG_NAME = "decisions_test"
 LOG_PATH = os.path.expanduser("~/.claude/jev/%s.jsonl" % LOG_NAME)
 TMP = tempfile.mkdtemp(prefix="jev-dispatch-test-")
-REPO_AGENTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(HERE)))), "agents")
+REPO_AGENTS = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(HERE)))), "assets", "agents")
 JEV_HOME = os.path.join(TMP, "jevhome")  # last_route.json + routing.log for hook runs
 
 

@@ -13,7 +13,9 @@ import urllib.request
 
 API_URL = os.environ.get("TYPESAFE_BASE_URL", "https://api.typesafe.ai").rstrip("/") + "/v1/systemone"
 MODEL = os.environ.get("TYPESAFE_DEFAULT_MODEL", "jev-latest")
-LOG_DIR = os.path.expanduser("~/.claude/jev")
+RUNTIME = os.environ.get("JEV_RUNTIME", "claude")
+RUNTIME_HOME = os.environ.get("CODEX_HOME", os.path.expanduser("~/.codex")) if RUNTIME == "codex" else os.path.expanduser("~/.claude")
+LOG_DIR = (os.environ.get("JEV_HOME") if RUNTIME == "codex" else None) or os.path.join(RUNTIME_HOME, "jev")
 # Repo root (skill/jev-orchestrator/scripts/ -> ../../..), resolved through the ~/.claude symlink.
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 KEY_FILES = [

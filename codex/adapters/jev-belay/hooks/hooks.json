@@ -1,0 +1,7 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [{"hooks":[{"type":"command","command":"node \"${PLUGIN_ROOT}/scripts/belay.mjs\"","timeout":5}]}],
+    "PostToolUse": [{"matcher":"^(Bash|exec_command|write_stdin|apply_patch|Edit|Write)$","hooks":[{"type":"command","command":"node \"${PLUGIN_ROOT}/scripts/belay.mjs\"","timeout":5}]}],
+    "Stop": [{"hooks":[{"type":"command","command":"node \"${PLUGIN_ROOT}/scripts/belay.mjs\"","timeout":12}]}]
+  }
+}

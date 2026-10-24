@@ -1,0 +1,6 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 \"${PLUGIN_ROOT}/hooks/adapter.py\"", "timeout": 5}]}],
+    "PreToolUse": [{"matcher": "^(Bash|exec_command|apply_patch|Edit|Write|Agent|spawn_agent)$", "hooks": [{"type": "command", "command": "python3 \"${PLUGIN_ROOT}/hooks/adapter.py\"", "timeout": 10}]}]
+  }
+}
